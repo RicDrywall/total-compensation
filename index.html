@@ -123,13 +123,13 @@
         <section class="section">
           <h2>Cash</h2>
           <p class="hint">Bonus and extra cash are what you reasonably expect, not a guarantee.</p>
-          <label><strong>Base salary</strong><em>Hourly? Enter the annual pay you expect to earn.</em><input data-field="base" inputmode="decimal" placeholder="0" /></label>
+          <label><strong>Base salary</strong><em>Gross annual pay, before taxes. Hourly? Enter what you expect to earn in a year.</em><input data-field="base" inputmode="decimal" placeholder="0" /></label>
           <label><strong>Expected bonus</strong><input data-field="bonus" inputmode="decimal" placeholder="0" /></label>
           <label><strong>Other expected cash</strong><em>Overtime, commission, shift differential, on-call.</em><input data-field="otherCash" inputmode="decimal" placeholder="0" /></label>
         </section>
         <section class="section">
           <h2>Retirement</h2>
-          <p class="hint">Only the match the employer adds. Your own contribution is still your money.</p>
+          <p class="hint">Only money the employer adds this year. Your own 457, 401(a), or 401(k) contribution is still yours, so leave it out. Do not enter an account balance.</p>
           <div class="actions" id="matchMode"></div>
           <label id="matchDollarsWrap"><strong>Employer match this year</strong><input data-field="matchDollars" inputmode="decimal" placeholder="0" /></label>
           <div class="row3 hidden" id="matchFormula">
@@ -137,6 +137,14 @@
             <label><strong>They match</strong><em>% of your contribution</em><input data-field="matchRatePct" inputmode="decimal" /></label>
             <label><strong>On the first</strong><em>% of pay</em><input data-field="matchCapPct" inputmode="decimal" /></label>
           </div>
+          <div class="row2">
+            <label><strong>Employer adds per paycheck</strong><em>A flat amount on each check. Indiana's Hoosier START match is $15 if you contribute to the 457.</em><input data-field="matchPerPay" inputmode="decimal" placeholder="0" /></label>
+            <label><strong>Paychecks a year</strong><em>26 if you are paid every two weeks.</em><input data-field="paychecks" inputmode="numeric" /></label>
+          </div>
+          <p class="hint" id="payNote"></p>
+          <label><strong>Employer deposit, percent of gross</strong><em>Only if it is not deducted from your pay. Many Indiana state paychecks have PERF's 3% paid this way. Do not enter the plan's 11.2% rate.</em><input data-field="employerDepositPct" inputmode="decimal" /></label>
+          <p class="hint" id="pctNote"></p>
+          <label><strong>Other pension deposit this year</strong><em>A deposit the employer makes this year. Not your account balance, and not a future monthly pension.</em><input data-field="pension" inputmode="decimal" placeholder="0" /></label>
         </section>
         <section class="section">
           <h2>Health</h2>
@@ -156,7 +164,6 @@
           <h2>Other amounts the employer adds</h2>
           <p class="hint">Count equity as the average that vests per year, not the whole grant.</p>
           <label><strong>Cash stipends</strong><em>Phone, car allowance, wellness, and similar money that is actually paid.</em><input data-field="stipends" inputmode="decimal" placeholder="0" /></label>
-          <label><strong>Pension contribution</strong><input data-field="pension" inputmode="decimal" placeholder="0" /></label>
           <div class="actions" id="equityMode"></div>
           <label id="equityAnnualWrap"><strong>Equity vesting per year</strong><input data-field="equityAnnual" inputmode="decimal" placeholder="0" /></label>
           <div class="row2 hidden" id="grantWrap">
@@ -189,7 +196,7 @@
     const num = (n) => (Number.isFinite(n) && n > 0 ? n : 0);
     const dollars = (n) => Math.round(num(n));
     function blank(name) {
-      return { name, base: 0, bonus: 0, otherCash: 0, matchMode: "dollars", matchDollars: 0, deferralPct: 6, matchRatePct: 50, matchCapPct: 6, employerPremium: 0, employerHsa: 0, yourPremiums: 0, expectedOop: 0, oopMax: 0, useWorstCase: false, deductible: 0, stipends: 0, pension: 0, equityMode: "annual", equityAnnual: 0, grantValue: 0, vestYears: 4, espp: 0, ptoDays: 0, holidayDays: 0, ptoPayout: 0, signing: 0, relocation: 0 };
+      return { name, base: 0, bonus: 0, otherCash: 0, matchMode: "dollars", matchDollars: 0, deferralPct: 6, matchRatePct: 50, matchCapPct: 6, matchPerPay: 0, paychecks: 26, employerDepositPct: 0, employerPremium: 0, employerHsa: 0, yourPremiums: 0, expectedOop: 0, oopMax: 0, useWorstCase: false, deductible: 0, stipends: 0, pension: 0, equityMode: "annual", equityAnnual: 0, grantValue: 0, vestYears: 4, espp: 0, ptoDays: 0, holidayDays: 0, ptoPayout: 0, signing: 0, relocation: 0 };
     }
     function sample() {
       return { ...blank("Sample offer"), base: 80000, bonus: 8000, matchMode: "formula", employerPremium: 14000, employerHsa: 1500, yourPremiums: 2400, expectedOop: 1000, oopMax: 4000, deductible: 3000, ptoDays: 15, holidayDays: 8, signing: 5000 };
@@ -199,6 +206,8 @@
       const eligible = Math.min(num(o.deferralPct), num(o.matchCapPct));
       return dollars(num(o.base) * (eligible / 100) * (num(o.matchRatePct) / 100));
     }
+    function paycheckDeposit(o) { return dollars(num(o.matchPerPay) * num(o.paychecks)); }
+    function accountDeposit(o) { return dollars(num(o.base) * (num(o.employerDepositPct) / 100)); }
     function equityValue(o) {
       if (o.equityMode === "annual") return dollars(o.equityAnnual);
       return num(o.vestYears) > 0 ? dollars(num(o.grantValue) / num(o.vestYears)) : 0;
@@ -210,7 +219,9 @@
         ["Base salary", dollars(o.base), "add"],
         ["Expected bonus", dollars(o.bonus), "add"],
         ["Other expected cash", dollars(o.otherCash), "add"],
-        ["401(k) match", matchValue(o), "add"],
+        ["Employer match", matchValue(o), "add"],
+        ["Deposit per paycheck", paycheckDeposit(o), "add"],
+        ["Employer account deposit", accountDeposit(o), "add"],
         ["Employer health premium", dollars(o.employerPremium), "add"],
         ["Employer HSA", dollars(o.employerHsa), "add"],
         ["Cash stipends", dollars(o.stipends), "add"],
@@ -290,6 +301,15 @@
       if (shown.ptoDays || shown.holidayDays) notes.push(`Time off, not in the dollar total: ${shown.ptoDays} PTO days, ${shown.holidayDays} holidays.`);
       if (shown.deductible) notes.push(`Deductible of ${fmt(shown.deductible)} is a note only. It is not subtracted.`);
       document.getElementById("notes").textContent = notes.join(" ");
+      const activeOffer = offers[active];
+      const payNote = document.getElementById("payNote");
+      payNote.textContent = activeOffer.matchPerPay > 0 && activeOffer.paychecks > 0
+        ? `${fmt(activeOffer.matchPerPay)} × ${activeOffer.paychecks} = ${fmt(paycheckDeposit(activeOffer))} this year.`
+        : "";
+      const pctNote = document.getElementById("pctNote");
+      pctNote.textContent = activeOffer.employerDepositPct > 0 && activeOffer.base > 0
+        ? `${activeOffer.employerDepositPct}% of gross is ${fmt(accountDeposit(activeOffer))} this year.`
+        : "";
       document.getElementById("banner").classList.toggle("hidden", !usingExample);
       document.getElementById("sampleBtn").textContent = usingExample ? "Start blank" : "Load sample";
       document.getElementById("compareBtn").textContent = compare ? "Hide comparison" : "Compare another offer";
