@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Real compensation</title>
+  <meta name="description" content="What a job is actually worth: cash, retirement match, health, and equity, minus premiums and expected care costs." />
+  <meta name="theme-color" content="#121614" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600&family=Public+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #121614;
+      --surface: #1b211e;
+      --inset: #242b27;
+      --fg: #efeae0;
+      --muted: #a3aaa4;
+      --faint: #727a74;
+      --line: #343c37;
+      --brass: #d7a85a;
+      --ink: #2a2112;
+      --sans: "Public Sans", ui-sans-serif, system-ui, sans-serif;
+      --serif: "Newsreader", ui-serif, Georgia, serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--sans); line-height: 1.5; }
+    button, input { font: inherit; color: inherit; }
+    button { cursor: pointer; }
+    main { max-width: 64rem; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+    .kicker { margin: 0; color: var(--brass); font-size: 0.875rem; font-weight: 500; letter-spacing: 0.02em; }
+    h1 { margin: 0.5rem 0 0; font-family: var(--serif); font-size: 2.5rem; font-weight: 500; line-height: 1.1; }
+    .lede, .hint, .note { color: var(--muted); }
+    .lede { max-width: 40rem; }
+    .banner, .card, .section { background: var(--surface); border: 1px solid var(--line); border-radius: 0.75rem; }
+    .banner { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; justify-content: space-between; margin: 1.25rem 0; padding: 0.75rem 1rem; }
+    .layout { display: grid; gap: 1.25rem; align-items: start; }
+    .card { padding: 1rem; }
+    .card h2, .section h2 { font-family: var(--serif); font-weight: 500; }
+    .section h2 { font-size: 1.5rem; margin: 0; }
+    .eyebrow { margin: 0; color: var(--muted); font-size: 0.875rem; }
+    .total { margin: 0.25rem 0 0; font-family: var(--serif); font-size: 3rem; line-height: 1; color: var(--brass); }
+    .yearline { margin: 0.5rem 0 0; font-size: 0.875rem; color: var(--muted); }
+    .yearline strong { color: var(--fg); font-weight: 500; }
+    .rows { list-style: none; margin: 1.25rem 0 0; padding: 0; border-top: 1px solid var(--line); }
+    .rows li { display: flex; justify-content: space-between; gap: 1rem; padding: 0.6rem 0; border-bottom: 1px solid var(--line); font-size: 0.875rem; }
+    .rows span { color: var(--muted); }
+    .rows b { font-weight: 500; }
+    .note { margin: 1rem 0 0; font-size: 0.875rem; }
+    .stack { display: grid; gap: 0.75rem; }
+    .row2 { display: grid; gap: 0.75rem; }
+    .actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    button.primary, button.ghost, button.mode, .tabs button {
+      min-height: 2.75rem; border-radius: 0.5rem; padding: 0 0.9rem;
+    }
+    button.primary { background: var(--brass); color: var(--ink); border: 0; font-weight: 600; }
+    button.ghost, button.mode, .tabs button { background: transparent; border: 1px solid var(--line); color: var(--muted); }
+    button.mode[aria-pressed="true"], .tabs button[aria-pressed="true"] { color: var(--fg); border-color: var(--brass); background: var(--inset); }
+    .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; padding: 0.25rem; }
+    label { display: block; }
+    label em { display: block; margin: 0.15rem 0 0.35rem; color: var(--faint); font-style: normal; font-size: 0.875rem; }
+    label strong { font-size: 0.875rem; font-weight: 500; }
+    input {
+      width: 100%; height: 3rem; border-radius: 0.5rem; border: 1px solid var(--line);
+      background: var(--inset); padding: 0 0.75rem; font-size: 1rem; outline: none;
+    }
+    input:focus { border-color: var(--brass); }
+    .section { padding: 1rem; display: grid; gap: 0.85rem; }
+    .switch { display: flex; justify-content: space-between; gap: 1rem; align-items: center; text-align: left; background: var(--inset); }
+    .switch small { display: block; color: var(--muted); font-size: 0.875rem; }
+    .knob { width: 3rem; height: 1.75rem; border-radius: 999px; background: var(--line); padding: 0.2rem; flex: none; }
+    .knob i { display: block; width: 1.25rem; height: 1.25rem; border-radius: 999px; background: var(--fg); }
+    .switch[aria-checked="true"] .knob { background: var(--brass); }
+    .switch[aria-checked="true"] .knob i { margin-left: auto; background: var(--ink); }
+    .chips { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-top: 0.8rem; }
+    .chip { border: 1px solid var(--line); border-radius: 0.5rem; padding: 0.5rem 0.7rem; }
+    .chip.on { border-color: var(--brass); background: var(--inset); }
+    .chip p { margin: 0; color: var(--muted); font-size: 0.875rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .chip b { font-family: var(--serif); font-size: 1.25rem; font-weight: 500; }
+    .gap { margin: 0.7rem 0 0; font-size: 0.875rem; }
+    .gap b { color: var(--brass); font-weight: 500; }
+    .hidden { display: none; }
+    @media (min-width: 720px) {
+      .row2, .row3 { grid-template-columns: 1fr 1fr; }
+      .row3 { grid-template-columns: 1fr 1fr 1fr; }
+    }
+    @media (min-width: 960px) {
+      h1 { font-size: 3rem; }
+      .layout { grid-template-columns: 0.92fr 1.08fr; }
+      .card { position: sticky; top: 1rem; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="kicker">For comparing a real offer</p>
+    <h1>Real compensation</h1>
+    <p class="lede">Cash you can spend, benefits that replace spending, minus insurance premiums and the care costs you expect to pay. A deductible is not pay, and it is not a guaranteed loss.</p>
+    <div class="banner" id="banner">
+      <p class="note" style="margin:0">Sample numbers are filled in so you can see the math. Replace them with your offer. Nothing leaves this browser.</p>
+      <button class="ghost" id="clear" type="button">Clear sample</button>
+    </div>
+    <div class="layout">
+      <section class="card" aria-live="polite">
+        <p class="eyebrow">Ongoing annual value</p>
+        <p class="total" id="total">$0</p>
+        <p class="yearline">Year 1, with signing and relocation: <strong id="year">$0</strong></p>
+        <div class="chips hidden" id="chips"></div>
+        <p class="gap hidden" id="gap"></p>
+        <ul class="rows" id="rows"></ul>
+        <p class="note" id="notes"></p>
+      </section>
+      <form class="stack" id="form">
+        <div class="actions">
+          <button class="primary" id="compareBtn" type="button">Compare another offer</button>
+          <button class="ghost" id="sampleBtn" type="button">Start blank</button>
+        </div>
+        <div class="tabs section hidden" id="tabs"></div>
+        <section class="section">
+          <h2>The offer</h2>
+          <label><strong>Name</strong><input id="name" autocomplete="off" /></label>
+        </section>
+        <section class="section">
+          <h2>Cash</h2>
+          <p class="hint">Bonus and extra cash are what you reasonably expect, not a guarantee.</p>
+          <label><strong>Base salary</strong><em>Hourly? Enter the annual pay you expect to earn.</em><input data-field="base" inputmode="decimal" placeholder="0" /></label>
+          <label><strong>Expected bonus</strong><input data-field="bonus" inputmode="decimal" placeholder="0" /></label>
+          <label><strong>Other expected cash</strong><em>Overtime, commission, shift differential, on-call.</em><input data-field="otherCash" inputmode="decimal" placeholder="0" /></label>
+        </section>
+        <section class="section">
+          <h2>Retirement</h2>
+          <p class="hint">Only the match the employer adds. Your own contribution is still your money.</p>
+          <div class="actions" id="matchMode"></div>
+          <label id="matchDollarsWrap"><strong>Employer match this year</strong><input data-field="matchDollars" inputmode="decimal" placeholder="0" /></label>
+          <div class="row3 hidden" id="matchFormula">
+            <label><strong>You contribute</strong><em>% of pay</em><input data-field="deferralPct" inputmode="decimal" /></label>
+            <label><strong>They match</strong><em>% of your contribution</em><input data-field="matchRatePct" inputmode="decimal" /></label>
+            <label><strong>On the first</strong><em>% of pay</em><input data-field="matchCapPct" inputmode="decimal" /></label>
+          </div>
+        </section>
+        <section class="section">
+          <h2>Health</h2>
+          <p class="hint">Employer premium and HSA are added. Your premium and expected care costs are subtracted. The deductible itself is not.</p>
+          <label><strong>Employer share of premiums</strong><input data-field="employerPremium" inputmode="decimal" placeholder="0" /></label>
+          <label><strong>Employer HSA deposit</strong><input data-field="employerHsa" inputmode="decimal" placeholder="0" /></label>
+          <label><strong>Your health, dental, and vision premiums</strong><input data-field="yourPremiums" inputmode="decimal" placeholder="0" /></label>
+          <label><strong>Expected out-of-pocket this year</strong><em>What you think you will actually spend. Leave blank if you do not want to guess.</em><input data-field="expectedOop" inputmode="decimal" placeholder="0" /></label>
+          <label><strong>Out-of-pocket max</strong><em>Used only if you turn on worst case.</em><input data-field="oopMax" inputmode="decimal" placeholder="0" /></label>
+          <label><strong>Deductible</strong><em>Kept as a note. It is not added and it is not subtracted.</em><input data-field="deductible" inputmode="decimal" placeholder="0" /></label>
+          <button class="switch" id="worst" type="button" role="switch" aria-checked="false">
+            <span><strong>Use the worst year</strong><small>Subtract the out-of-pocket max instead of expected spending.</small></span>
+            <span class="knob"><i></i></span>
+          </button>
+        </section>
+        <section class="section">
+          <h2>Other amounts the employer adds</h2>
+          <p class="hint">Count equity as the average that vests per year, not the whole grant.</p>
+          <label><strong>Cash stipends</strong><em>Phone, car allowance, wellness, and similar money that is actually paid.</em><input data-field="stipends" inputmode="decimal" placeholder="0" /></label>
+          <label><strong>Pension contribution</strong><input data-field="pension" inputmode="decimal" placeholder="0" /></label>
+          <div class="actions" id="equityMode"></div>
+          <label id="equityAnnualWrap"><strong>Equity vesting per year</strong><input data-field="equityAnnual" inputmode="decimal" placeholder="0" /></label>
+          <div class="row2 hidden" id="grantWrap">
+            <label><strong>Grant value</strong><input data-field="grantValue" inputmode="decimal" placeholder="0" /></label>
+            <label><strong>Vest over</strong><em>years</em><input data-field="vestYears" inputmode="numeric" /></label>
+          </div>
+          <label><strong>ESPP discount you will use</strong><em>Only the discount on shares you actually plan to buy.</em><input data-field="espp" inputmode="decimal" placeholder="0" /></label>
+        </section>
+        <section class="section">
+          <h2>Time off</h2>
+          <p class="hint">Shown as days. Dollars are added only if unused PTO is paid out.</p>
+          <div class="row2">
+            <label><strong>PTO days</strong><input data-field="ptoDays" inputmode="numeric" placeholder="0" /></label>
+            <label><strong>Holidays</strong><input data-field="holidayDays" inputmode="numeric" placeholder="0" /></label>
+          </div>
+          <label><strong>Unused PTO they will pay out</strong><input data-field="ptoPayout" inputmode="decimal" placeholder="0" /></label>
+        </section>
+        <section class="section">
+          <h2>Year 1 only</h2>
+          <p class="hint">Kept off the ongoing number so a signing bonus does not make every future year look richer.</p>
+          <label><strong>Signing bonus</strong><input data-field="signing" inputmode="decimal" placeholder="0" /></label>
+          <label><strong>Relocation</strong><input data-field="relocation" inputmode="decimal" placeholder="0" /></label>
+        </section>
+      </form>
+    </div>
+  </main>
+  <script>
+    const KEY = "real-compensation-v1";
+    const money = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+    const num = (n) => (Number.isFinite(n) && n > 0 ? n : 0);
+    const dollars = (n) => Math.round(num(n));
+    function blank(name) {
+      return { name, base: 0, bonus: 0, otherCash: 0, matchMode: "dollars", matchDollars: 0, deferralPct: 6, matchRatePct: 50, matchCapPct: 6, employerPremium: 0, employerHsa: 0, yourPremiums: 0, expectedOop: 0, oopMax: 0, useWorstCase: false, deductible: 0, stipends: 0, pension: 0, equityMode: "annual", equityAnnual: 0, grantValue: 0, vestYears: 4, espp: 0, ptoDays: 0, holidayDays: 0, ptoPayout: 0, signing: 0, relocation: 0 };
+    }
+    function sample() {
+      return { ...blank("Sample offer"), base: 80000, bonus: 8000, matchMode: "formula", employerPremium: 14000, employerHsa: 1500, yourPremiums: 2400, expectedOop: 1000, oopMax: 4000, deductible: 3000, ptoDays: 15, holidayDays: 8, signing: 5000 };
+    }
+    function matchValue(o) {
+      if (o.matchMode === "dollars") return dollars(o.matchDollars);
+      const eligible = Math.min(num(o.deferralPct), num(o.matchCapPct));
+      return dollars(num(o.base) * (eligible / 100) * (num(o.matchRatePct) / 100));
+    }
+    function equityValue(o) {
+      if (o.equityMode === "annual") return dollars(o.equityAnnual);
+      return num(o.vestYears) > 0 ? dollars(num(o.grantValue) / num(o.vestYears)) : 0;
+    }
+    function statement(o) {
+      const careLabel = o.useWorstCase ? "Out-of-pocket max" : "Expected out-of-pocket";
+      const care = dollars(o.useWorstCase ? o.oopMax : o.expectedOop);
+      const lines = [
+        ["Base salary", dollars(o.base), "add"],
+        ["Expected bonus", dollars(o.bonus), "add"],
+        ["Other expected cash", dollars(o.otherCash), "add"],
+        ["401(k) match", matchValue(o), "add"],
+        ["Employer health premium", dollars(o.employerPremium), "add"],
+        ["Employer HSA", dollars(o.employerHsa), "add"],
+        ["Cash stipends", dollars(o.stipends), "add"],
+        ["Pension", dollars(o.pension), "add"],
+        ["Equity, annual vest", equityValue(o), "add"],
+        ["ESPP discount", dollars(o.espp), "add"],
+        ["Unused PTO paid out", dollars(o.ptoPayout), "add"],
+        ["Your insurance premiums", dollars(o.yourPremiums), "sub"],
+        [careLabel, care, "sub"],
+      ].filter((line) => line[0] === "Base salary" || line[1] > 0);
+      const ongoing = lines.reduce((sum, line) => sum + (line[2] === "sub" ? -line[1] : line[1]), 0);
+      const signing = dollars(o.signing);
+      const relocation = dollars(o.relocation);
+      return { lines, ongoing, yearOne: ongoing + signing + relocation, signing, relocation, ptoDays: dollars(o.ptoDays), holidayDays: dollars(o.holidayDays), deductible: dollars(o.deductible) };
+    }
+    function fmt(n) { return n < 0 ? "−" + money.format(Math.abs(n)) : money.format(n); }
+    let offers = [sample(), blank("Other offer")];
+    let compare = false;
+    let active = 0;
+    let usingExample = true;
+
+    function fieldInputs() { return document.querySelectorAll("[data-field]"); }
+    function readForm() {
+      const o = offers[active];
+      o.name = document.getElementById("name").value;
+      fieldInputs().forEach((input) => { o[input.dataset.field] = num(Number(input.value)); });
+      if (o.vestYears === 0 && document.querySelector('[data-field="vestYears"]').value === "") o.vestYears = 0;
+    }
+    function fillForm() {
+      const o = offers[active];
+      document.getElementById("name").value = o.name;
+      fieldInputs().forEach((input) => {
+        const value = o[input.dataset.field];
+        const always = input.dataset.field.endsWith("Pct") || input.dataset.field === "vestYears";
+        input.value = value || always ? String(value || 0) : "";
+        if (!always && !value) input.value = "";
+      });
+      document.getElementById("worst").setAttribute("aria-checked", o.useWorstCase ? "true" : "false");
+      document.getElementById("matchDollarsWrap").classList.toggle("hidden", o.matchMode !== "dollars");
+      document.getElementById("matchFormula").classList.toggle("hidden", o.matchMode !== "formula");
+      document.getElementById("equityAnnualWrap").classList.toggle("hidden", o.equityMode !== "annual");
+      document.getElementById("grantWrap").classList.toggle("hidden", o.equityMode !== "grant");
+      paintModes("matchMode", [["dollars", "I know the dollars"], ["formula", "From the formula"]], o.matchMode, (mode) => { o.matchMode = mode; usingExample = false; fillForm(); render(); });
+      paintModes("equityMode", [["annual", "Annual vest"], ["grant", "Grant ÷ years"]], o.equityMode, (mode) => { o.equityMode = mode; usingExample = false; fillForm(); render(); });
+    }
+    function paintModes(id, options, current, onPick) {
+      const host = document.getElementById(id);
+      host.innerHTML = "";
+      options.forEach(([value, label]) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "mode";
+        button.textContent = label;
+        button.setAttribute("aria-pressed", value === current ? "true" : "false");
+        button.addEventListener("click", () => onPick(value));
+        host.appendChild(button);
+      });
+    }
+    function render() {
+      const shown = statement(offers[compare ? active : 0]);
+      document.getElementById("total").textContent = fmt(shown.ongoing);
+      document.getElementById("year").textContent = fmt(shown.yearOne);
+      const rows = document.getElementById("rows");
+      rows.innerHTML = "";
+      shown.lines.forEach((line) => {
+        const li = document.createElement("li");
+        const label = document.createElement("span");
+        label.textContent = line[0];
+        const amount = document.createElement("b");
+        amount.textContent = line[2] === "sub" ? "−" + money.format(line[1]) : fmt(line[1]);
+        li.append(label, amount);
+        rows.appendChild(li);
+      });
+      if (shown.signing) addRow(rows, "Signing bonus, year 1 only", shown.signing);
+      if (shown.relocation) addRow(rows, "Relocation, year 1 only", shown.relocation);
+      const notes = [];
+      if (shown.ptoDays || shown.holidayDays) notes.push(`Time off, not in the dollar total: ${shown.ptoDays} PTO days, ${shown.holidayDays} holidays.`);
+      if (shown.deductible) notes.push(`Deductible of ${fmt(shown.deductible)} is a note only. It is not subtracted.`);
+      document.getElementById("notes").textContent = notes.join(" ");
+      document.getElementById("banner").classList.toggle("hidden", !usingExample);
+      document.getElementById("sampleBtn").textContent = usingExample ? "Start blank" : "Load sample";
+      document.getElementById("compareBtn").textContent = compare ? "Hide comparison" : "Compare another offer";
+      const chips = document.getElementById("chips");
+      chips.classList.toggle("hidden", !compare);
+      const gap = document.getElementById("gap");
+      if (compare) {
+        chips.innerHTML = "";
+        offers.forEach((offer, index) => {
+          const result = statement(offer);
+          const chip = document.createElement("div");
+          chip.className = "chip" + (index === active ? " on" : "");
+          chip.innerHTML = `<p></p><b></b>`;
+          chip.querySelector("p").textContent = offer.name || (index ? "Second offer" : "First offer");
+          chip.querySelector("b").textContent = fmt(result.ongoing);
+          chips.appendChild(chip);
+        });
+        const a = statement(offers[0]);
+        const b = statement(offers[1]);
+        const touched = (result, offer) => result.ongoing || result.signing || result.relocation || offer.ptoDays || offer.holidayDays || offer.deductible;
+        if (touched(a, offers[0]) && touched(b, offers[1])) {
+          const delta = b.ongoing - a.ongoing;
+          gap.classList.remove("hidden");
+          gap.innerHTML = `${offers[1].name || "Second offer"} vs ${offers[0].name || "first offer"}: <b>${delta >= 0 ? "+" : "−"}${money.format(Math.abs(delta))} a year</b>`;
+        } else gap.classList.add("hidden");
+        const tabs = document.getElementById("tabs");
+        tabs.classList.remove("hidden");
+        tabs.innerHTML = "";
+        offers.forEach((offer, index) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.textContent = offer.name || (index ? "Second offer" : "First offer");
+          button.setAttribute("aria-pressed", index === active ? "true" : "false");
+          button.addEventListener("click", () => { readForm(); active = index; fillForm(); render(); });
+          tabs.appendChild(button);
+        });
+      } else {
+        document.getElementById("tabs").classList.add("hidden");
+        gap.classList.add("hidden");
+      }
+      if (!usingExample) localStorage.setItem(KEY, JSON.stringify({ offers, compare }));
+      else localStorage.removeItem(KEY);
+    }
+    function addRow(list, label, amount) {
+      const li = document.createElement("li");
+      li.innerHTML = `<span></span><b></b>`;
+      li.querySelector("span").textContent = label;
+      li.querySelector("b").textContent = fmt(amount);
+      list.appendChild(li);
+    }
+    document.getElementById("form").addEventListener("input", () => { usingExample = false; readForm(); render(); });
+    document.getElementById("worst").addEventListener("click", () => {
+      usingExample = false;
+      offers[active].useWorstCase = !offers[active].useWorstCase;
+      fillForm(); render();
+    });
+    document.getElementById("compareBtn").addEventListener("click", () => {
+      readForm();
+      compare = !compare;
+      usingExample = false;
+      if (compare) active = 1;
+      fillForm(); render();
+    });
+    document.getElementById("clear").addEventListener("click", resetBlank);
+    document.getElementById("sampleBtn").addEventListener("click", () => { if (usingExample) resetBlank(); else loadSample(); });
+    function resetBlank() { offers = [blank("Current job"), blank("Other offer")]; compare = false; active = 0; usingExample = false; fillForm(); render(); }
+    function loadSample() { offers = [sample(), blank("Other offer")]; compare = false; active = 0; usingExample = true; fillForm(); render(); }
+    try {
+      const saved = JSON.parse(localStorage.getItem(KEY) || "null");
+      if (saved && Array.isArray(saved.offers) && saved.offers.length === 2) {
+        offers = saved.offers.map((offer, index) => ({ ...blank(index ? "Other offer" : "Current job"), ...offer }));
+        compare = Boolean(saved.compare);
+        usingExample = false;
+      }
+    } catch (error) { /* keep the sample */ }
+    fillForm();
+    render();
+  </script>
+</body>
+</html>
